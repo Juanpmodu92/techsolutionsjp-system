@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import clientRoutes from './modules/clients/client.routes.js';
+import authRoutes from './modules/auth/auth.routes.js';
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/clients', clientRoutes);
+app.use('/api/auth', authRoutes);
 
 export default app;
