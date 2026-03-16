@@ -41,3 +41,5 @@ export const createClientSchema = z
       });
     }
   });
+
+export const updateClientSchema = createClientSchema;
