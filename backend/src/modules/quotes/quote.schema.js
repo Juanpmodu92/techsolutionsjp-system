@@ -23,3 +23,7 @@ export const createQuoteSchema = z.object({
   notes: z.string().trim().max(2000).optional().nullable(),
   items: z.array(quoteItemSchema).min(1)
 });
+
+export const updateQuoteStatusSchema = z.object({
+  status: z.enum(['draft', 'sent', 'approved', 'rejected', 'expired'])
+});

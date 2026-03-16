@@ -95,6 +95,26 @@ export async function createQuoteWithItems(data) {
       await client.query(insertItemQuery, itemValues);
     }
 
+    await client.query(
+      `
+        INSERT INTO client_history (
+          client_id,
+          event_type,
+          reference_type,
+          reference_id,
+          description
+        )
+        VALUES ($1, $2, $3, $4, $5)
+      `,
+      [
+        data.client_id,
+        'quote_created',
+        'quote',
+        quote.id,
+        `Quote ${quote.quote_number} was created`
+      ]
+    );
+
     const itemsResult = await client.query(
       `
         SELECT *
@@ -189,4 +209,75 @@ export async function getQuoteById(id) {
     ...quote,
     items: itemsResult.rows
   };
+}
+
+export async function updateQuoteStatus({ quoteId, status, changedByUserId }) {
+  const client = await db.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const currentQuoteResult = await client.query(
+      `
+        SELECT id, quote_number, client_id, status
+        FROM quotes
+        WHERE id = $1
+        LIMIT 1
+      `,
+      [quoteId]
+    );
+
+    const currentQuote = currentQuoteResult.rows[0] ?? null;
+
+    if (!currentQuote) {
+      await client.query('ROLLBACK');
+      return null;
+    }
+
+    const updateResult = await client.query(
+      `
+        UPDATE quotes
+        SET
+          status = $2,
+          updated_at = NOW()
+        WHERE id = $1
+        RETURNING *
+      `,
+      [quoteId, status]
+    );
+
+    const updatedQuote = updateResult.rows[0];
+
+    await client.query(
+      `
+        INSERT INTO client_history (
+          client_id,
+          event_type,
+          reference_type,
+          reference_id,
+          description
+        )
+        VALUES ($1, $2, $3, $4, $5)
+      `,
+      [
+        currentQuote.client_id,
+        'quote_status_changed',
+        'quote',
+        currentQuote.id,
+        `Quote ${currentQuote.quote_number} status changed from ${currentQuote.status} to ${status} by user ${changedByUserId}`
+      ]
+    );
+
+    await client.query('COMMIT');
+
+    return {
+      previousStatus: currentQuote.status,
+      quote: updatedQuote
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
