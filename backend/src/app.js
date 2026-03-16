@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import clientRoutes from './modules/clients/client.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import quoteRoutes from './modules/quotes/quote.routes.js';
+import productRoutes from './modules/products/product.routes.js';
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/clients', clientRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/quotes', quoteRoutes);
+app.use('/api/products', productRoutes);
 
 export default app;
