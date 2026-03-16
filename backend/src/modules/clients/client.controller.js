@@ -5,6 +5,7 @@ import {
   getClientById
 } from './client.repository.js';
 import { createClientSchema } from './client.schema.js';
+import { handleDatabaseError } from '../../shared/utils/db-error.js';
 
 export async function createClientHandler(req, res) {
   try {
@@ -24,9 +25,11 @@ export async function createClientHandler(req, res) {
       });
     }
 
-    return res.status(500).json({
+    const dbError = handleDatabaseError(error);
+
+    return res.status(dbError.status).json({
       ok: false,
-      message: 'Internal server error'
+      message: dbError.message
     });
   }
 }
@@ -39,10 +42,12 @@ export async function getAllClientsHandler(_req, res) {
       ok: true,
       data: clients
     });
-  } catch (_error) {
-    return res.status(500).json({
+  } catch (error) {
+    const dbError = handleDatabaseError(error);
+
+    return res.status(dbError.status).json({
       ok: false,
-      message: 'Internal server error'
+      message: dbError.message
     });
   }
 }
@@ -63,10 +68,12 @@ export async function getClientByIdHandler(req, res) {
       ok: true,
       data: client
     });
-  } catch (_error) {
-    return res.status(500).json({
+  } catch (error) {
+    const dbError = handleDatabaseError(error);
+
+    return res.status(dbError.status).json({
       ok: false,
-      message: 'Internal server error'
+      message: dbError.message
     });
   }
 }
