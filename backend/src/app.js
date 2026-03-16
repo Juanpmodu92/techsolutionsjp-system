@@ -7,6 +7,7 @@ import clientRoutes from './modules/clients/client.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import quoteRoutes from './modules/quotes/quote.routes.js';
 import productRoutes from './modules/products/product.routes.js';
+import serviceRoutes from './modules/services/service.routes.js';
 
 const app = express();
 
@@ -33,5 +34,6 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/services', serviceRoutes);
 
 export default app;
