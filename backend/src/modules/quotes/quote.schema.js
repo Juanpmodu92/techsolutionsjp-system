@@ -1,19 +1,32 @@
 import { z } from 'zod';
 
-export const quoteItemSchema = z.object({
-  item_type: z.enum([
-    'product',
-    'service',
-    'software_project',
-    'hosting',
-    'web_maintenance'
-  ]),
-  reference_id: z.string().uuid().optional().nullable(),
-  description: z.string().trim().min(1).max(1000),
-  quantity: z.number().positive(),
-  unit_price: z.number().min(0),
-  metadata: z.record(z.string(), z.any()).optional().nullable()
-});
+export const quoteItemSchema = z
+  .object({
+    item_type: z.enum([
+      'product',
+      'service',
+      'software_project',
+      'hosting',
+      'web_maintenance'
+    ]),
+    reference_id: z.string().uuid().optional().nullable(),
+    description: z.string().trim().min(1).max(1000),
+    quantity: z.number().positive(),
+    unit_price: z.number().min(0),
+    metadata: z.record(z.string(), z.any()).optional().nullable()
+  })
+  .superRefine((data, ctx) => {
+    if (
+      (data.item_type === 'product' || data.item_type === 'service') &&
+      !data.reference_id
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['reference_id'],
+        message: `reference_id is required for ${data.item_type} items`
+      });
+    }
+  });
 
 export const createQuoteSchema = z.object({
   client_id: z.string().uuid(),

@@ -8,6 +8,8 @@ import { isValidQuoteStatusTransition } from './quote-status.rules.js';
 import { calculateQuoteTotals } from './quote.utils.js';
 import {
   createQuoteWithItems,
+  getActiveProductById,
+  getActiveServiceById,
   getAllQuotes,
   getClientByIdForQuote,
   getQuoteById,
@@ -32,6 +34,44 @@ export async function createQuoteHandler(req, res) {
         ok: false,
         message: 'Cannot create quote for an inactive client'
       });
+    }
+
+    for (const item of payload.items) {
+      if (item.item_type === 'product') {
+        const product = await getActiveProductById(item.reference_id);
+
+        if (!product) {
+          return res.status(404).json({
+            ok: false,
+            message: `Referenced product not found: ${item.reference_id}`
+          });
+        }
+
+        if (!product.is_active) {
+          return res.status(400).json({
+            ok: false,
+            message: `Referenced product is inactive: ${item.reference_id}`
+          });
+        }
+      }
+
+      if (item.item_type === 'service') {
+        const service = await getActiveServiceById(item.reference_id);
+
+        if (!service) {
+          return res.status(404).json({
+            ok: false,
+            message: `Referenced service not found: ${item.reference_id}`
+          });
+        }
+
+        if (!service.is_active) {
+          return res.status(400).json({
+            ok: false,
+            message: `Referenced service is inactive: ${item.reference_id}`
+          });
+        }
+      }
     }
 
     const totals = calculateQuoteTotals(

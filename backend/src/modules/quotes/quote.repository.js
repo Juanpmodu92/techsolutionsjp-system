@@ -13,6 +13,30 @@ export async function getClientByIdForQuote(clientId) {
   return result.rows[0] ?? null;
 }
 
+export async function getActiveProductById(id) {
+  const query = `
+    SELECT id, name, price, is_active
+    FROM products
+    WHERE id = $1
+    LIMIT 1
+  `;
+
+  const result = await db.query(query, [id]);
+  return result.rows[0] ?? null;
+}
+
+export async function getActiveServiceById(id) {
+  const query = `
+    SELECT id, name, base_price, is_active
+    FROM services
+    WHERE id = $1
+    LIMIT 1
+  `;
+
+  const result = await db.query(query, [id]);
+  return result.rows[0] ?? null;
+}
+
 export async function getLastQuoteNumber(client) {
   const query = `
     SELECT quote_number
