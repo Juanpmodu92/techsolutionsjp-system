@@ -125,3 +125,17 @@ export async function deactivateClient(id) {
   const result = await db.query(query, [id]);
   return result.rows[0] ?? null;
 }
+
+export async function reactivateClient(id) {
+  const query = `
+    UPDATE clients
+    SET
+      is_active = TRUE,
+      updated_at = NOW()
+    WHERE id = $1
+    RETURNING *
+  `;
+
+  const result = await db.query(query, [id]);
+  return result.rows[0] ?? null;
+}

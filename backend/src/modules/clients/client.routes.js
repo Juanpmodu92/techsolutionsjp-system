@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   createClientHandler,
   deactivateClientHandler,
+  reactivateClientHandler,
   getAllClientsHandler,
   getClientByIdHandler,
   updateClientHandler
@@ -14,5 +15,6 @@ router.get('/', getAllClientsHandler);
 router.get('/:id', getClientByIdHandler);
 router.put('/:id', updateClientHandler);
 router.patch('/:id/deactivate', deactivateClientHandler);
+router.patch('/:id/activate', reactivateClientHandler);
 
 export default router;

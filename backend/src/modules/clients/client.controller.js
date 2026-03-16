@@ -2,6 +2,7 @@ import { ZodError } from 'zod';
 import {
   createClient,
   deactivateClient,
+  reactivateClient,
   getAllClients,
   getClientById,
   updateClient
@@ -123,6 +124,32 @@ export async function deactivateClientHandler(req, res) {
   try {
     const { id } = req.params;
     const client = await deactivateClient(id);
+
+    if (!client) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Client not found'
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      data: client
+    });
+  } catch (error) {
+    const dbError = handleDatabaseError(error);
+
+    return res.status(dbError.status).json({
+      ok: false,
+      message: dbError.message
+    });
+  }
+}
+
+export async function reactivateClientHandler(req, res) {
+  try {
+    const { id } = req.params;
+    const client = await reactivateClient(id);
 
     if (!client) {
       return res.status(404).json({

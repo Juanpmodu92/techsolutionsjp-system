@@ -1,8 +1,9 @@
-import { createBrowserRouter } from 'react-router';
-import AppLayout from '../components/layout/AppLayout';
-import ProtectedRoute from '../modules/auth/components/ProtectedRoute';
-import LoginPage from '../modules/auth/pages/LoginPage';
-import DashboardPage from '../modules/dashboard/pages/DashboardPage';
+import { createBrowserRouter } from "react-router";
+import AppLayout from "../components/layout/AppLayout";
+import ProtectedRoute from "../modules/auth/components/ProtectedRoute";
+import LoginPage from "../modules/auth/pages/LoginPage";
+import ClientsPage from "../modules/clients/pages/ClientsPage";
+import DashboardPage from "../modules/dashboard/pages/DashboardPage";
 
 function PlaceholderPage({ title }) {
   return (
@@ -15,77 +16,77 @@ function PlaceholderPage({ title }) {
 
 export const router = createBrowserRouter([
   {
-    path: '/login',
-    element: <LoginPage />
+    path: "/login",
+    element: <LoginPage />,
   },
   {
-    path: '/',
+    path: "/",
     element: (
       <ProtectedRoute>
         <AppLayout>
           <DashboardPage />
         </AppLayout>
       </ProtectedRoute>
-    )
+    ),
   },
   {
-    path: '/clients',
+    path: "/clients",
     element: (
       <ProtectedRoute>
         <AppLayout>
-          <PlaceholderPage title="Clientes" />
+          <ClientsPage />
         </AppLayout>
       </ProtectedRoute>
-    )
+    ),
   },
   {
-    path: '/products',
+    path: "/products",
     element: (
       <ProtectedRoute>
         <AppLayout>
           <PlaceholderPage title="Productos" />
         </AppLayout>
       </ProtectedRoute>
-    )
+    ),
   },
   {
-    path: '/services',
+    path: "/services",
     element: (
       <ProtectedRoute>
         <AppLayout>
           <PlaceholderPage title="Servicios" />
         </AppLayout>
       </ProtectedRoute>
-    )
+    ),
   },
   {
-    path: '/quotes',
+    path: "/quotes",
     element: (
       <ProtectedRoute>
         <AppLayout>
           <PlaceholderPage title="Cotizaciones" />
         </AppLayout>
       </ProtectedRoute>
-    )
+    ),
   },
   {
-    path: '/sales',
+    path: "/sales",
     element: (
       <ProtectedRoute>
         <AppLayout>
           <PlaceholderPage title="Ventas" />
         </AppLayout>
       </ProtectedRoute>
-    )
+    ),
   },
   {
-    path: '/software-projects',
+    path: "/software-projects",
     element: (
       <ProtectedRoute>
         <AppLayout>
           <PlaceholderPage title="Proyectos software" />
         </AppLayout>
       </ProtectedRoute>
-    )
-  }
+    ),
+  },
 ]);
