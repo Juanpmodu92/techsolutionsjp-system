@@ -10,6 +10,7 @@ import productRoutes from './modules/products/product.routes.js';
 import serviceRoutes from './modules/services/service.routes.js';
 import inventoryRoutes from './modules/inventory/inventory.routes.js';
 import saleRoutes from './modules/sales/sale.routes.js';
+import softwareProjectRoutes from './modules/software-projects/software-project.routes.js';
 
 const app = express();
 
@@ -39,5 +40,6 @@ app.use('/api/products', productRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/sales', saleRoutes);
+app.use('/api/software-projects', softwareProjectRoutes);
 
 export default app;
