@@ -9,6 +9,7 @@ import quoteRoutes from './modules/quotes/quote.routes.js';
 import productRoutes from './modules/products/product.routes.js';
 import serviceRoutes from './modules/services/service.routes.js';
 import inventoryRoutes from './modules/inventory/inventory.routes.js';
+import saleRoutes from './modules/sales/sale.routes.js';
 
 const app = express();
 
@@ -37,5 +38,6 @@ app.use('/api/quotes', quoteRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/sales', saleRoutes);
 
 export default app;

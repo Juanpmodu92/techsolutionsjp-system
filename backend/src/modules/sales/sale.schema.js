@@ -1,0 +1,38 @@
+import { z } from 'zod';
+
+export const saleItemSchema = z
+  .object({
+    item_type: z.enum([
+      'product',
+      'service',
+      'software_project',
+      'hosting',
+      'web_maintenance'
+    ]),
+    reference_id: z.string().uuid().optional().nullable(),
+    description: z.string().trim().min(1).max(1000),
+    quantity: z.number().positive(),
+    unit_price: z.number().min(0),
+    metadata: z.record(z.string(), z.any()).optional().nullable()
+  })
+  .superRefine((data, ctx) => {
+    if (
+      (data.item_type === 'product' || data.item_type === 'service') &&
+      !data.reference_id
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['reference_id'],
+        message: `reference_id is required for ${data.item_type} items`
+      });
+    }
+  });
+
+export const createSaleSchema = z.object({
+  client_id: z.string().uuid(),
+  quote_id: z.string().uuid().optional().nullable(),
+  discount: z.number().min(0).default(0),
+  tax: z.number().min(0).default(0),
+  notes: z.string().trim().max(2000).optional().nullable(),
+  items: z.array(saleItemSchema).min(1)
+});
