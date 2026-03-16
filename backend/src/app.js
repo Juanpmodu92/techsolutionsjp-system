@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import clientRoutes from './modules/clients/client.routes.js';
 
 const app = express();
 
@@ -24,5 +25,7 @@ app.get('/api/health', (_req, res) => {
     message: 'Tech Solutions JP API is running'
   });
 });
+
+app.use('/api/clients', clientRoutes);
 
 export default app;
