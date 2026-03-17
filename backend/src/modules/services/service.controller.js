@@ -7,6 +7,7 @@ import {
 import {
   createService,
   deactivateService,
+  activateService,
   getAllServices,
   getServiceById,
   updateService
@@ -120,6 +121,31 @@ export async function updateServiceHandler(req, res) {
 export async function deactivateServiceHandler(req, res) {
   try {
     const service = await deactivateService(req.params.id);
+
+    if (!service) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Service not found'
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      data: service
+    });
+  } catch (error) {
+    const dbError = handleDatabaseError(error);
+
+    return res.status(dbError.status).json({
+      ok: false,
+      message: dbError.message
+    });
+  }
+}
+
+export async function activateServiceHandler(req, res) {
+  try {
+    const service = await activateService(req.params.id);
 
     if (!service) {
       return res.status(404).json({
