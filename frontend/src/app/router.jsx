@@ -6,6 +6,7 @@ import ClientsPage from "../modules/clients/pages/ClientsPage";
 import DashboardPage from "../modules/dashboard/pages/DashboardPage";
 import ProductsPage from "../modules/products/pages/ProductsPage";
 import QuotesPage from "../modules/quotes/pages/QuotesPage";
+import SalesPage from "../modules/sales/pages/SalesPage";
 import ServicesPage from "../modules/services/pages/ServicesPage";
 
 function PlaceholderPage({ title }) {
@@ -77,7 +78,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <AppLayout>
-          <PlaceholderPage title="Ventas" />
+          <SalesPage />
         </AppLayout>
       </ProtectedRoute>
     ),
