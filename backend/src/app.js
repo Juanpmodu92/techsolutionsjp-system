@@ -15,6 +15,7 @@ import technicalServiceRoutes from './modules/technical-service/technical-servic
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
 import paymentRoutes from './modules/payments/payment.routes.js';
 import userRoutes from './modules/users/user.routes.js';
+import reportRoutes from './modules/reports/report.routes.js';
 
 const app = express();
 
@@ -49,5 +50,6 @@ app.use('/api/technical-services', technicalServiceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/reports', reportRoutes);
 
 export default app;
