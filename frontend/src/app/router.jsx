@@ -8,6 +8,7 @@ import InventoryPage from "../modules/inventory/pages/InventoryPage";
 import PaymentsPage from "../modules/payments/pages/PaymentsPage";
 import ProductsPage from "../modules/products/pages/ProductsPage";
 import QuotesPage from "../modules/quotes/pages/QuotesPage";
+import ReportsPage from "../modules/reports/pages/ReportsPage";
 import SalesPage from "../modules/sales/pages/SalesPage";
 import ServicesPage from "../modules/services/pages/ServicesPage";
 import SoftwareProjectsPage from "../modules/software-projects/pages/SoftwareProjectsPage";
@@ -125,6 +126,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <AppLayout>
           <SoftwareProjectsPage />
+        </AppLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/reports",
+    element: (
+      <ProtectedRoute>
+        <AppLayout>
+          <ReportsPage />
         </AppLayout>
       </ProtectedRoute>
     ),

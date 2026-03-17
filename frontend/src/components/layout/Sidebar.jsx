@@ -12,6 +12,7 @@ const links = [
   { to: "/sales", label: "Ventas" },
   { to: "/payments", label: "Pagos" },
   { to: "/software-projects", label: "Proyectos software" },
+  { to: "/reports", label: "Reportes" },
 ];
 
 export default function Sidebar() {
