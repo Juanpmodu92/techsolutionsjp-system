@@ -12,6 +12,7 @@ import SalesPage from "../modules/sales/pages/SalesPage";
 import ServicesPage from "../modules/services/pages/ServicesPage";
 import SoftwareProjectsPage from "../modules/software-projects/pages/SoftwareProjectsPage";
 import TechnicalServicesPage from "../modules/technical-services/pages/TechnicalServicesPage";
+import UsersPage from "../modules/users/pages/UsersPage";
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <AppLayout>
           <ClientsPage />
+        </AppLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/users",
+    element: (
+      <ProtectedRoute>
+        <AppLayout>
+          <UsersPage />
         </AppLayout>
       </ProtectedRoute>
     ),
