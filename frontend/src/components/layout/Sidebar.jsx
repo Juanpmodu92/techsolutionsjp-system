@@ -9,6 +9,7 @@ const links = [
   { to: "/technical-services", label: "Servicio técnico" },
   { to: "/quotes", label: "Cotizaciones" },
   { to: "/sales", label: "Ventas" },
+  { to: "/payments", label: "Pagos" },
   { to: "/software-projects", label: "Proyectos software" },
 ];
 
