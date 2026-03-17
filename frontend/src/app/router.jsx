@@ -10,6 +10,7 @@ import QuotesPage from "../modules/quotes/pages/QuotesPage";
 import SalesPage from "../modules/sales/pages/SalesPage";
 import ServicesPage from "../modules/services/pages/ServicesPage";
 import SoftwareProjectsPage from "../modules/software-projects/pages/SoftwareProjectsPage";
+import TechnicalServicesPage from "../modules/technical-services/pages/TechnicalServicesPage";
 
 export const router = createBrowserRouter([
   {
@@ -47,11 +48,31 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: "/inventory",
+    element: (
+      <ProtectedRoute>
+        <AppLayout>
+          <InventoryPage />
+        </AppLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/services",
     element: (
       <ProtectedRoute>
         <AppLayout>
           <ServicesPage />
+        </AppLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/technical-services",
+    element: (
+      <ProtectedRoute>
+        <AppLayout>
+          <TechnicalServicesPage />
         </AppLayout>
       </ProtectedRoute>
     ),
@@ -82,16 +103,6 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <AppLayout>
           <SoftwareProjectsPage />
-        </AppLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/inventory",
-    element: (
-      <ProtectedRoute>
-        <AppLayout>
-          <InventoryPage />
         </AppLayout>
       </ProtectedRoute>
     ),
