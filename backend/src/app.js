@@ -11,6 +11,7 @@ import serviceRoutes from './modules/services/service.routes.js';
 import inventoryRoutes from './modules/inventory/inventory.routes.js';
 import saleRoutes from './modules/sales/sale.routes.js';
 import softwareProjectRoutes from './modules/software-projects/software-project.routes.js';
+import technicalServiceRoutes from './modules/technical-service/technical-service.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
 
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/software-projects', softwareProjectRoutes);
+app.use('/api/technical-services', technicalServiceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 export default app;
