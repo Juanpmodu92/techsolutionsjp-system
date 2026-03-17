@@ -4,6 +4,7 @@ import ProtectedRoute from "../modules/auth/components/ProtectedRoute";
 import LoginPage from "../modules/auth/pages/LoginPage";
 import ClientsPage from "../modules/clients/pages/ClientsPage";
 import DashboardPage from "../modules/dashboard/pages/DashboardPage";
+import ProductsPage from "../modules/products/pages/ProductsPage";
 
 function PlaceholderPage({ title }) {
   return (
@@ -44,7 +45,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <AppLayout>
-          <PlaceholderPage title="Productos" />
+          <ProductsPage />
         </AppLayout>
       </ProtectedRoute>
     ),
