@@ -8,15 +8,7 @@ import ProductsPage from "../modules/products/pages/ProductsPage";
 import QuotesPage from "../modules/quotes/pages/QuotesPage";
 import SalesPage from "../modules/sales/pages/SalesPage";
 import ServicesPage from "../modules/services/pages/ServicesPage";
-
-function PlaceholderPage({ title }) {
-  return (
-    <section className="rounded-2xl bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
-      <p className="mt-2 text-sm text-slate-500">Módulo en construcción.</p>
-    </section>
-  );
-}
+import SoftwareProjectsPage from "../modules/software-projects/pages/SoftwareProjectsPage";
 
 export const router = createBrowserRouter([
   {
@@ -88,7 +80,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <AppLayout>
-          <PlaceholderPage title="Proyectos software" />
+          <SoftwareProjectsPage />
         </AppLayout>
       </ProtectedRoute>
     ),
