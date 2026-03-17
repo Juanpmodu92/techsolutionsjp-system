@@ -13,6 +13,7 @@ import saleRoutes from './modules/sales/sale.routes.js';
 import softwareProjectRoutes from './modules/software-projects/software-project.routes.js';
 import technicalServiceRoutes from './modules/technical-service/technical-service.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
+import paymentRoutes from './modules/payments/payment.routes.js';
 
 const app = express();
 
@@ -45,5 +46,6 @@ app.use('/api/sales', saleRoutes);
 app.use('/api/software-projects', softwareProjectRoutes);
 app.use('/api/technical-services', technicalServiceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/payments', paymentRoutes);
 
 export default app;
