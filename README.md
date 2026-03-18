@@ -1,5 +1,9 @@
 # Tech Solutions JP System
 
+![Status](https://img.shields.io/badge/status-active-success)
+![Backend](https://img.shields.io/badge/backend-Node.js-green)
+![Frontend](https://img.shields.io/badge/frontend-React-blue)
+
 Sistema de gestión integral para **Tech Solutions JP**, orientado a la administración de:
 
 - clientes
@@ -79,6 +83,56 @@ El sistema busca unificar toda esa operación en una sola herramienta.
 
 ---
 
+## Arquitectura
+
+```txt
+Frontend (React + Vite)
+        ↓
+API REST (Node.js + Express)
+        ↓
+PostgreSQL
+```
+
+---
+
+## Estructura del proyecto
+
+```txt
+techsolutionsjp-system/
+│
+├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── modules/
+│   │   ├── shared/
+│   │   ├── app.js
+│   │   └── server.js
+│   └── package.json
+│  
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── lib/
+│   │   ├── modules/
+│   │   ├── utils/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   └── package.json
+│
+├── database/
+│   ├── migrations/
+│   ├── seeds/
+│   └── schema.sql
+│
+├── docker-compose.yml
+│
+└── README.md
+```
+
+---
+
 ## Módulos implementados
 
 ### Backend
@@ -115,6 +169,66 @@ El sistema busca unificar toda esa operación en una sola herramienta.
 
 ---
 
+## Funcionalidades destacadas
+
+### Cotizaciones
+- creación de cotizaciones con múltiples ítems
+- soporte para productos, servicios y proyectos de software
+- cambio de estado
+- generación de PDF
+
+### Ventas
+- registro de ventas con detalle de ítems
+- integración con inventario
+- asociación opcional a cotizaciones
+
+### Inventario
+- entradas
+- salidas
+- ajustes
+- historial de movimientos
+- alertas de stock bajo
+
+### Servicio técnico
+- creación de órdenes técnicas
+- control de estados
+- asociación a cliente y producto
+- seguimiento operativo
+
+### Proyectos de software
+- gestión de proyectos web y sistemas
+- control de estados
+- asociación con cliente y cotización
+
+### Pagos
+- registro de pagos para ventas
+- registro de pagos para servicios técnicos
+- validación de saldo pendiente
+- filtros por cliente, venta y servicio técnico
+
+### Reportes
+- resumen de ventas
+- resumen de pagos
+- resumen de inventario
+- resumen de servicio técnico
+
+---
+
+## Flujo general del sistema
+
+```txt
+Cliente
+  ↓
+Cotización
+  ↓
+Venta / Proyecto / Servicio técnico
+  ↓
+Pago
+  ↓
+Reporte y seguimiento
+```
+---
+
 ## Stack tecnológico
 
 ### Frontend
@@ -132,9 +246,6 @@ El sistema busca unificar toda esa operación en una sola herramienta.
 - Zod
 - PDFKit
 
-### Base de datos
-- PostgreSQL
-
 ### Herramientas
 - Git
 - GitHub
@@ -143,172 +254,109 @@ El sistema busca unificar toda esa operación en una sola herramienta.
 
 ---
 
-## Arquitectura
+## Instalación y ejecución
 
-```txt
-Frontend (React + Vite)
-        ↓
-API REST (Node.js + Express)
-        ↓
-PostgreSQL
+### 1. Clonar repositorio
 
----
+```bash
+git clone https://github.com/Juanpmodu92/techsolutionsjp-system.git
+cd techsolutionsjp-system
+```
 
-Estructura del proyecto
+### 2. Backend
 
-techsolutionsjp-system/
-│
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── modules/
-│   │   ├── shared/
-│   │   ├── app.js
-│   │   └── server.js
-│   ├── package.json
-│   └── docker-compose.yml
-│
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── lib/
-│   │   ├── modules/
-│   │   ├── utils/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-│
-├── database/
-│   ├── migrations/
-│   ├── seeds/
-│   └── schema.sql
-│
-└── README.md
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### 3. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 4. Base de datos
+
+```bash
+docker compose up -d
+```
+
+Aplicar migraciones y esquema según corresponda.
 
 ---
 
-Funcionalidades destacadas
+## Uso básico
 
-Cotizaciones
-
-* creación de cotizaciones con múltiples ítems
-* soporte para productos, servicios y proyectos de software
-* cambio de estado 
-* generación de PDF
-
-Ventas
-
-* registro de ventas con detalle de ítems
-* integración con inventario
-* asociación opcional a cotizaciones
-
-Inventario
-
-* entradas
-* salidas
-* ajustes
-* historial de movimientos
-* alertas de stock bajo
-
-Servicio técnico
-
-* creación de órdenes técnicas
-* control de estados
-* asociación a cliente y producto
-* seguimiento operativo
-* Proyectos de software
-* gestión de proyectos web y sistemas
-* control de estados
-* asociación con cliente y cotización
-
-Pagos
-
-* registro de pagos para ventas
-* registro de pagos para servicios técnicos
-* validación de saldo pendiente
-* filtros por cliente, venta y servicio técnico
-
-Reportes
-
-* resumen de ventas
-* resumen de pagos
-* resumen de inventario
-* resumen de servicio técnico
+1. Crear usuario administrador (manual o mediante seed)
+2. Iniciar sesión en el sistema
+3. Crear un cliente
+4. Generar una cotización
+5. Convertir la cotización en venta o servicio
+6. Registrar pagos
 
 ---
 
-Flujo general del sistema
+## Variables de entorno
 
-Cliente
-  ↓
-Cotización
-  ↓
-Venta / Proyecto / Servicio técnico
-  ↓
-Pago
-  ↓
-Reporte y seguimiento
+### Backend (.env)
 
----
-
-Instalación y ejecución
-
-1. Clonar repositorio
-
-* git clone https://github.com/Juanpmodu92/techsolutionsjp-system.git
-* cd techsolutionsjp-system
-
-2. Backend
-
-* cd backend
-* npm install
-* npm run dev
-
-3. Frontend
-
-* cd frontend
-* npm install
-* npm run dev
-
-4. Base de datos
-
-* Levantar PostgreSQL con Docker:
-* docker compose up -d
-* Aplicar esquema y migraciones según corresponda.
-
----
-
-Variables de entorno
-
-Backend .env
+```env
 PORT=3000
-DATABASE_URL=postgresql://postgres:admin1234@127.0.0.1:5433/techsolutionsjp_db
-JWT_SECRET=tu_clave_secreta
+DATABASE_URL=postgresql://user:password@localhost:5432/techsolutionsjp_db
+JWT_SECRET=your_secret_key
+```
 
-Frontend .env
+### Frontend (.env)
+
+```env
 VITE_API_URL=http://localhost:3000/api
-Estado del proyecto
+```
 
 ---
+
+## API (ejemplos)
+
+```http
+POST /api/auth/login
+POST /api/clients
+GET /api/products
+POST /api/quotes
+POST /api/sales
+```
+
+---
+
+## Estado del proyecto
 
 Proyecto en desarrollo activo.
 
-Actualmente cuenta con una base funcional completa para operación administrativa y técnica, y continúa en proceso de mejora visual, experiencia de usuario y refinamiento comercial.
+Cuenta con una base funcional completa para operación administrativa y técnica, y continúa en proceso de mejora visual, experiencia de usuario y escalabilidad.
 
 ---
 
-Próximas mejoras
+## Próximas mejoras
 
-* mejora visual global del frontend
-* exportación adicional de documentos
-* filtros avanzados
-* dashboard con gráficos
-* mejoras de experiencia de usuario
-* despliegue productivo
-* documentación técnica ampliada
+- mejora visual global del frontend
+- exportación adicional de documentos
+- filtros avanzados
+- dashboard con gráficos
+- mejoras de experiencia de usuario
+- despliegue productivo
+- documentación técnica ampliada
 
-Autor
+---
 
-Desarrollado por Juan Pablo Moreno para Tech Solutions JP.
+## Autor
+
+**Juan Moreno**  
+Full Stack Developer  
+Tech Solutions JP  
+
+- Desarrollo de software
+- Infraestructura IT
+- Soluciones empresariales
+
