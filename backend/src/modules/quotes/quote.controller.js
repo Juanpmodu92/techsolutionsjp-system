@@ -1,5 +1,6 @@
 import { ZodError } from 'zod';
 import { handleDatabaseError } from '../../shared/utils/db-error.js';
+import { generateQuotePdf } from './quote-pdf.service.js';
 import {
   createQuoteSchema,
   updateQuoteStatusSchema
@@ -205,6 +206,28 @@ export async function updateQuoteStatusHandler(req, res) {
       });
     }
 
+    const dbError = handleDatabaseError(error);
+
+    return res.status(dbError.status).json({
+      ok: false,
+      message: dbError.message
+    });
+  }
+}
+
+export async function getQuotePdfHandler(req, res) {
+  try {
+    const quote = await getQuoteById(req.params.id);
+
+    if (!quote) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Quote not found'
+      });
+    }
+
+    return generateQuotePdf(quote, res);
+  } catch (error) {
     const dbError = handleDatabaseError(error);
 
     return res.status(dbError.status).json({

@@ -199,6 +199,8 @@ export async function getQuoteById(id) {
     SELECT
       q.*,
       c.client_type,
+      c.city,
+      c.phone,
       c.first_name,
       c.last_name,
       c.company_name,
