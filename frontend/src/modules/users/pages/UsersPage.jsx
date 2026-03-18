@@ -1,26 +1,37 @@
-import { useEffect, useMemo, useState } from 'react';
-import { api } from '../../../lib/api';
-import UserForm from '../components/UserForm';
-import UsersTable from '../components/UsersTable';
+import { useEffect, useMemo, useState } from "react";
+import ConfirmDialog from "../../../components/feedback/ConfirmDialog";
+import { useToast } from "../../../context/ToastContext";
+import { api } from "../../../lib/api";
+import UserForm from "../components/UserForm";
+import UsersTable from "../components/UsersTable";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const [fetchError, setFetchError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [processingUserId, setProcessingUserId] = useState('');
+  const [processingUserId, setProcessingUserId] = useState("");
   const [editingUser, setEditingUser] = useState(null);
+  const [confirmState, setConfirmState] = useState({
+    open: false,
+    user: null,
+    action: null,
+  });
+
+  const toast = useToast();
 
   async function loadUsers() {
     try {
-      setFetchError('');
-      const response = await api.get('/users');
+      setFetchError("");
+      const response = await api.get("/users");
       setUsers(response.data.data);
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible cargar usuarios'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible cargar usuarios";
+
+      setFetchError(message);
+      toast.error("Error al cargar usuarios", message);
     } finally {
       setLoading(false);
     }
@@ -32,14 +43,17 @@ export default function UsersPage() {
 
   async function handleCreateUser(payload) {
     try {
-      setSubmitError('');
+      setSubmitError("");
       setIsSubmitting(true);
-      await api.post('/users', payload);
+      await api.post("/users", payload);
       await loadUsers();
+      toast.success("Usuario creado", "El usuario fue registrado.");
     } catch (err) {
-      setSubmitError(
-        err?.response?.data?.message || 'No fue posible crear el usuario'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible crear el usuario";
+
+      setSubmitError(message);
+      toast.error("Error al crear usuario", message);
     } finally {
       setIsSubmitting(false);
     }
@@ -49,51 +63,81 @@ export default function UsersPage() {
     if (!editingUser) return;
 
     try {
-      setSubmitError('');
+      setSubmitError("");
       setIsSubmitting(true);
       await api.put(`/users/${editingUser.id}`, payload);
       setEditingUser(null);
       await loadUsers();
+      toast.success("Usuario actualizado", "Los cambios fueron guardados.");
     } catch (err) {
-      setSubmitError(
-        err?.response?.data?.message || 'No fue posible actualizar el usuario'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible actualizar el usuario";
+
+      setSubmitError(message);
+      toast.error("Error al actualizar usuario", message);
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleActivate(user) {
-    try {
-      setProcessingUserId(user.id);
-      await api.patch(`/users/${user.id}/activate`);
-      await loadUsers();
-    } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible activar el usuario'
-      );
-    } finally {
-      setProcessingUserId('');
-    }
+  function requestActivate(user) {
+    setConfirmState({
+      open: true,
+      user,
+      action: "activate",
+    });
   }
 
-  async function handleDeactivate(user) {
+  function requestDeactivate(user) {
+    setConfirmState({
+      open: true,
+      user,
+      action: "deactivate",
+    });
+  }
+
+  function closeConfirm() {
+    setConfirmState({
+      open: false,
+      user: null,
+      action: null,
+    });
+  }
+
+  async function handleConfirmAction() {
+    const { user, action } = confirmState;
+    if (!user || !action) return;
+
     try {
       setProcessingUserId(user.id);
-      await api.patch(`/users/${user.id}/deactivate`);
+
+      if (action === "activate") {
+        await api.patch(`/users/${user.id}/activate`);
+        toast.success("Usuario activado", "El usuario volvió a estar activo.");
+      }
+
+      if (action === "deactivate") {
+        await api.patch(`/users/${user.id}/deactivate`);
+        toast.success("Usuario desactivado", "El usuario quedó inactivo.");
+      }
+
+      closeConfirm();
       await loadUsers();
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible desactivar el usuario'
-      );
+      const message =
+        err?.response?.data?.message ||
+        `No fue posible ${action === "activate" ? "activar" : "desactivar"} el usuario`;
+
+      setFetchError(message);
+      toast.error("Operación no completada", message);
     } finally {
-      setProcessingUserId('');
+      setProcessingUserId("");
     }
   }
 
   const formTitle = useMemo(
-    () => (editingUser ? 'Editar usuario' : 'Nuevo usuario'),
-    [editingUser]
+    () => (editingUser ? "Editar usuario" : "Nuevo usuario"),
+    [editingUser],
   );
 
   return (
@@ -117,7 +161,7 @@ export default function UsersPage() {
 
           <div className="mt-5">
             <UserForm
-              mode={editingUser ? 'edit' : 'create'}
+              mode={editingUser ? "edit" : "create"}
               initialValues={editingUser}
               onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
               onCancel={editingUser ? () => setEditingUser(null) : undefined}
@@ -141,13 +185,35 @@ export default function UsersPage() {
             <UsersTable
               users={users}
               onEdit={setEditingUser}
-              onActivate={handleActivate}
-              onDeactivate={handleDeactivate}
+              onActivate={requestActivate}
+              onDeactivate={requestDeactivate}
               isProcessingId={processingUserId}
             />
           )}
         </section>
       </div>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title={
+          confirmState.action === "activate"
+            ? "Activar usuario"
+            : "Desactivar usuario"
+        }
+        message={
+          confirmState.action === "activate"
+            ? "¿Deseas activar este usuario?"
+            : "¿Deseas desactivar este usuario?"
+        }
+        confirmText={
+          confirmState.action === "activate" ? "Activar" : "Desactivar"
+        }
+        confirmVariant={
+          confirmState.action === "activate" ? "primary" : "danger"
+        }
+        onConfirm={handleConfirmAction}
+        onCancel={closeConfirm}
+      />
     </section>
   );
 }

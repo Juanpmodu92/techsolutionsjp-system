@@ -1,31 +1,42 @@
-import { useEffect, useMemo, useState } from 'react';
-import { api } from '../../../lib/api';
-import ServiceForm from '../components/ServiceForm';
-import ServicesTable from '../components/ServicesTable';
+import { useEffect, useMemo, useState } from "react";
+import ConfirmDialog from "../../../components/feedback/ConfirmDialog";
+import { useToast } from "../../../context/ToastContext";
+import { api } from "../../../lib/api";
+import ServiceForm from "../components/ServiceForm";
+import ServicesTable from "../components/ServicesTable";
 
 export default function ServicesPage() {
   const [services, setServices] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const [fetchError, setFetchError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [processingServiceId, setProcessingServiceId] = useState('');
+  const [processingServiceId, setProcessingServiceId] = useState("");
   const [editingService, setEditingService] = useState(null);
+  const [confirmState, setConfirmState] = useState({
+    open: false,
+    service: null,
+    action: null,
+  });
 
-  async function fetchServices(nextSearch = '') {
+  const toast = useToast();
+
+  async function fetchServices(nextSearch = "") {
     try {
-      setFetchError('');
+      setFetchError("");
 
-      const response = await api.get('/services', {
-        params: nextSearch ? { search: nextSearch } : {}
+      const response = await api.get("/services", {
+        params: nextSearch ? { search: nextSearch } : {},
       });
 
       setServices(response.data.data);
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible cargar servicios'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible cargar servicios";
+
+      setFetchError(message);
+      toast.error("Error al cargar servicios", message);
     } finally {
       setLoading(false);
     }
@@ -43,14 +54,17 @@ export default function ServicesPage() {
 
   async function handleCreateService(payload) {
     try {
-      setSubmitError('');
+      setSubmitError("");
       setIsSubmitting(true);
-      await api.post('/services', payload);
+      await api.post("/services", payload);
       await fetchServices(search);
+      toast.success("Servicio creado", "El servicio fue registrado.");
     } catch (err) {
-      setSubmitError(
-        err?.response?.data?.message || 'No fue posible crear el servicio'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible crear el servicio";
+
+      setSubmitError(message);
+      toast.error("Error al crear servicio", message);
     } finally {
       setIsSubmitting(false);
     }
@@ -60,51 +74,84 @@ export default function ServicesPage() {
     if (!editingService) return;
 
     try {
-      setSubmitError('');
+      setSubmitError("");
       setIsSubmitting(true);
       await api.put(`/services/${editingService.id}`, payload);
       setEditingService(null);
       await fetchServices(search);
+      toast.success("Servicio actualizado", "Los cambios fueron guardados.");
     } catch (err) {
-      setSubmitError(
-        err?.response?.data?.message || 'No fue posible actualizar el servicio'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible actualizar el servicio";
+
+      setSubmitError(message);
+      toast.error("Error al actualizar servicio", message);
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleDeactivate(service) {
-    try {
-      setProcessingServiceId(service.id);
-      await api.patch(`/services/${service.id}/deactivate`);
-      await fetchServices(search);
-    } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible desactivar el servicio'
-      );
-    } finally {
-      setProcessingServiceId('');
-    }
+  function requestDeactivate(service) {
+    setConfirmState({
+      open: true,
+      service,
+      action: "deactivate",
+    });
   }
 
-  async function handleActivate(service) {
+  function requestActivate(service) {
+    setConfirmState({
+      open: true,
+      service,
+      action: "activate",
+    });
+  }
+
+  function closeConfirm() {
+    setConfirmState({
+      open: false,
+      service: null,
+      action: null,
+    });
+  }
+
+  async function handleConfirmAction() {
+    const { service, action } = confirmState;
+    if (!service || !action) return;
+
     try {
       setProcessingServiceId(service.id);
-      await api.patch(`/services/${service.id}/activate`);
+
+      if (action === "deactivate") {
+        await api.patch(`/services/${service.id}/deactivate`);
+        toast.success("Servicio desactivado", "El servicio quedó inactivo.");
+      }
+
+      if (action === "activate") {
+        await api.patch(`/services/${service.id}/activate`);
+        toast.success(
+          "Servicio activado",
+          "El servicio volvió a estar activo.",
+        );
+      }
+
+      closeConfirm();
       await fetchServices(search);
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible activar el servicio'
-      );
+      const message =
+        err?.response?.data?.message ||
+        `No fue posible ${action === "activate" ? "activar" : "desactivar"} el servicio`;
+
+      setFetchError(message);
+      toast.error("Operación no completada", message);
     } finally {
-      setProcessingServiceId('');
+      setProcessingServiceId("");
     }
   }
 
   const formTitle = useMemo(
-    () => (editingService ? 'Editar servicio' : 'Nuevo servicio'),
-    [editingService]
+    () => (editingService ? "Editar servicio" : "Nuevo servicio"),
+    [editingService],
   );
 
   return (
@@ -128,10 +175,14 @@ export default function ServicesPage() {
 
           <div className="mt-5">
             <ServiceForm
-              mode={editingService ? 'edit' : 'create'}
+              mode={editingService ? "edit" : "create"}
               initialValues={editingService}
-              onSubmit={editingService ? handleUpdateService : handleCreateService}
-              onCancel={editingService ? () => setEditingService(null) : undefined}
+              onSubmit={
+                editingService ? handleUpdateService : handleCreateService
+              }
+              onCancel={
+                editingService ? () => setEditingService(null) : undefined
+              }
               isSubmitting={isSubmitting}
             />
           </div>
@@ -173,13 +224,35 @@ export default function ServicesPage() {
             <ServicesTable
               services={services}
               onEdit={setEditingService}
-              onDeactivate={handleDeactivate}
-              onActivate={handleActivate}
+              onDeactivate={requestDeactivate}
+              onActivate={requestActivate}
               isProcessingId={processingServiceId}
             />
           )}
         </section>
       </div>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title={
+          confirmState.action === "activate"
+            ? "Activar servicio"
+            : "Desactivar servicio"
+        }
+        message={
+          confirmState.action === "activate"
+            ? "¿Deseas activar este servicio?"
+            : "¿Deseas desactivar este servicio?"
+        }
+        confirmText={
+          confirmState.action === "activate" ? "Activar" : "Desactivar"
+        }
+        confirmVariant={
+          confirmState.action === "activate" ? "primary" : "danger"
+        }
+        onConfirm={handleConfirmAction}
+        onCancel={closeConfirm}
+      />
     </section>
   );
 }

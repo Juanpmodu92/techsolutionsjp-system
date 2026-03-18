@@ -1,43 +1,53 @@
-import { useEffect, useMemo, useState } from 'react';
-import { api } from '../../../lib/api';
-import ProductCategoryForm from '../components/ProductCategoryForm';
-import ProductForm from '../components/ProductForm';
-import ProductsTable from '../components/ProductsTable';
+import { useEffect, useMemo, useState } from "react";
+import ConfirmDialog from "../../../components/feedback/ConfirmDialog";
+import { useToast } from "../../../context/ToastContext";
+import { api } from "../../../lib/api";
+import ProductCategoryForm from "../components/ProductCategoryForm";
+import ProductForm from "../components/ProductForm";
+import ProductsTable from "../components/ProductsTable";
 
 export default function ProductsPage() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState('');
-  const [categoryError, setCategoryError] = useState('');
-  const [productError, setProductError] = useState('');
+  const [fetchError, setFetchError] = useState("");
+  const [categoryError, setCategoryError] = useState("");
+  const [productError, setProductError] = useState("");
   const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
-  const [processingProductId, setProcessingProductId] = useState('');
+  const [processingProductId, setProcessingProductId] = useState("");
   const [editingProduct, setEditingProduct] = useState(null);
+  const [confirmState, setConfirmState] = useState({
+    open: false,
+    product: null,
+  });
+
+  const toast = useToast();
 
   async function fetchCategories() {
-    const response = await api.get('/products/categories');
+    const response = await api.get("/products/categories");
     setCategories(response.data.data);
   }
 
-  async function fetchProducts(nextSearch = '') {
-    const response = await api.get('/products', {
-      params: nextSearch ? { search: nextSearch } : {}
+  async function fetchProducts(nextSearch = "") {
+    const response = await api.get("/products", {
+      params: nextSearch ? { search: nextSearch } : {},
     });
 
     setProducts(response.data.data);
   }
 
-  async function loadData(nextSearch = '') {
+  async function loadData(nextSearch = "") {
     try {
-      setFetchError('');
+      setFetchError("");
       await Promise.all([fetchCategories(), fetchProducts(nextSearch)]);
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible cargar productos'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible cargar productos";
+
+      setFetchError(message);
+      toast.error("Error al cargar productos", message);
     } finally {
       setLoading(false);
     }
@@ -55,14 +65,17 @@ export default function ProductsPage() {
 
   async function handleCreateCategory(payload) {
     try {
-      setCategoryError('');
+      setCategoryError("");
       setIsSubmittingCategory(true);
-      await api.post('/products/categories', payload);
+      await api.post("/products/categories", payload);
       await fetchCategories();
+      toast.success("Categoría creada", "La categoría fue registrada.");
     } catch (err) {
-      setCategoryError(
-        err?.response?.data?.message || 'No fue posible crear la categoría'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible crear la categoría";
+
+      setCategoryError(message);
+      toast.error("Error al crear categoría", message);
     } finally {
       setIsSubmittingCategory(false);
     }
@@ -70,14 +83,17 @@ export default function ProductsPage() {
 
   async function handleCreateProduct(payload) {
     try {
-      setProductError('');
+      setProductError("");
       setIsSubmittingProduct(true);
-      await api.post('/products', payload);
+      await api.post("/products", payload);
       await loadData(search);
+      toast.success("Producto creado", "El producto fue registrado.");
     } catch (err) {
-      setProductError(
-        err?.response?.data?.message || 'No fue posible crear el producto'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible crear el producto";
+
+      setProductError(message);
+      toast.error("Error al crear producto", message);
     } finally {
       setIsSubmittingProduct(false);
     }
@@ -87,37 +103,61 @@ export default function ProductsPage() {
     if (!editingProduct) return;
 
     try {
-      setProductError('');
+      setProductError("");
       setIsSubmittingProduct(true);
       await api.put(`/products/${editingProduct.id}`, payload);
       setEditingProduct(null);
       await loadData(search);
+      toast.success("Producto actualizado", "Los cambios fueron guardados.");
     } catch (err) {
-      setProductError(
-        err?.response?.data?.message || 'No fue posible actualizar el producto'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible actualizar el producto";
+
+      setProductError(message);
+      toast.error("Error al actualizar producto", message);
     } finally {
       setIsSubmittingProduct(false);
     }
   }
 
-  async function handleDeactivateProduct(product) {
+  function requestDeactivateProduct(product) {
+    setConfirmState({
+      open: true,
+      product,
+    });
+  }
+
+  function closeConfirm() {
+    setConfirmState({
+      open: false,
+      product: null,
+    });
+  }
+
+  async function handleConfirmDeactivate() {
+    const product = confirmState.product;
+    if (!product) return;
+
     try {
       setProcessingProductId(product.id);
       await api.patch(`/products/${product.id}/deactivate`);
+      closeConfirm();
       await loadData(search);
+      toast.success("Producto desactivado", "El producto quedó inactivo.");
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible desactivar el producto'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible desactivar el producto";
+
+      setFetchError(message);
+      toast.error("Error al desactivar producto", message);
     } finally {
-      setProcessingProductId('');
+      setProcessingProductId("");
     }
   }
 
   const formTitle = useMemo(
-    () => (editingProduct ? 'Editar producto' : 'Nuevo producto'),
-    [editingProduct]
+    () => (editingProduct ? "Editar producto" : "Nuevo producto"),
+    [editingProduct],
   );
 
   return (
@@ -151,7 +191,9 @@ export default function ProductsPage() {
           </section>
 
           <section className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-900">{formTitle}</h3>
+            <h3 className="text-lg font-semibold text-slate-900">
+              {formTitle}
+            </h3>
 
             {productError ? (
               <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -162,10 +204,14 @@ export default function ProductsPage() {
             <div className="mt-5">
               <ProductForm
                 categories={categories}
-                mode={editingProduct ? 'edit' : 'create'}
+                mode={editingProduct ? "edit" : "create"}
                 initialValues={editingProduct}
-                onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
-                onCancel={editingProduct ? () => setEditingProduct(null) : undefined}
+                onSubmit={
+                  editingProduct ? handleUpdateProduct : handleCreateProduct
+                }
+                onCancel={
+                  editingProduct ? () => setEditingProduct(null) : undefined
+                }
                 isSubmitting={isSubmittingProduct}
               />
             </div>
@@ -208,12 +254,22 @@ export default function ProductsPage() {
             <ProductsTable
               products={products}
               onEdit={setEditingProduct}
-              onDeactivate={handleDeactivateProduct}
+              onDeactivate={requestDeactivateProduct}
               isProcessingId={processingProductId}
             />
           )}
         </section>
       </div>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Desactivar producto"
+        message="¿Deseas desactivar este producto?"
+        confirmText="Desactivar"
+        confirmVariant="danger"
+        onConfirm={handleConfirmDeactivate}
+        onCancel={closeConfirm}
+      />
     </section>
   );
 }
