@@ -22,3 +22,16 @@ export function formatClientName(item) {
   const fullName = `${item.first_name ?? ''} ${item.last_name ?? ''}`.trim();
   return fullName || '-';
 }
+
+export function formatPaymentMethod(method) {
+  const labels = {
+    cash: 'Efectivo',
+    bank_transfer: 'Transferencia',
+    card: 'Tarjeta',
+    nequi: 'Nequi',
+    daviplata: 'Daviplata',
+    other: 'Otro'
+  };
+
+  return labels[method] || method || '-';
+}

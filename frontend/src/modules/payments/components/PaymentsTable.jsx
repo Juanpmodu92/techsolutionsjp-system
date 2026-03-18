@@ -1,23 +1,9 @@
-function getClientName(payment) {
-  if (payment.client_type === 'company') {
-    return payment.company_name;
-  }
-
-  return `${payment.first_name ?? ''} ${payment.last_name ?? ''}`.trim();
-}
-
-function getPaymentMethodLabel(method) {
-  const labels = {
-    cash: 'Efectivo',
-    bank_transfer: 'Transferencia',
-    card: 'Tarjeta',
-    nequi: 'Nequi',
-    daviplata: 'Daviplata',
-    other: 'Otro'
-  };
-
-  return labels[method] || method;
-}
+import {
+  formatClientName,
+  formatCurrency,
+  formatDate,
+  formatPaymentMethod,
+} from "../../../utils/format";
 
 export default function PaymentsTable({ payments }) {
   return (
@@ -43,27 +29,27 @@ export default function PaymentsTable({ payments }) {
                   {payment.payment_number}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  {getClientName(payment)}
+                  {formatClientName(payment)}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  {payment.sale_number || payment.ticket_number || '-'}
+                  {payment.sale_number || payment.ticket_number || "-"}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  {getPaymentMethodLabel(payment.payment_method)}
+                  {formatPaymentMethod(payment.payment_method)}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  $ {Number(payment.amount).toLocaleString('es-CO')}
+                  {formatCurrency(payment.amount)}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  {payment.reference || '-'}
+                  {payment.reference || "-"}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
                   {payment.received_by_first_name
-                    ? `${payment.received_by_first_name} ${payment.received_by_last_name ?? ''}`.trim()
-                    : '-'}
+                    ? `${payment.received_by_first_name} ${payment.received_by_last_name ?? ""}`.trim()
+                    : "-"}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  {new Date(payment.payment_date).toLocaleDateString('es-CO')}
+                  {formatDate(payment.payment_date)}
                 </td>
               </tr>
             ))

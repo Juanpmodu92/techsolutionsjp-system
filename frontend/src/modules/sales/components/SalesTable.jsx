@@ -1,10 +1,4 @@
-function getClientName(sale) {
-  if (sale.client_type === 'company') {
-    return sale.company_name;
-  }
-
-  return `${sale.first_name ?? ''} ${sale.last_name ?? ''}`.trim();
-}
+import { formatClientName, formatCurrency } from "../../../utils/format";
 
 export default function SalesTable({ sales, selectedSaleId, onSelectSale }) {
   return (
@@ -27,11 +21,11 @@ export default function SalesTable({ sales, selectedSaleId, onSelectSale }) {
                   {sale.sale_number}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  {getClientName(sale)}
+                  {formatClientName(sale)}
                 </td>
                 <td className="px-4 py-3 text-slate-700">{sale.status}</td>
                 <td className="px-4 py-3 text-slate-700">
-                  $ {Number(sale.total).toLocaleString('es-CO')}
+                  {formatCurrency(sale.total)}
                 </td>
                 <td className="px-4 py-3">
                   <button
@@ -39,7 +33,7 @@ export default function SalesTable({ sales, selectedSaleId, onSelectSale }) {
                     onClick={() => onSelectSale(sale)}
                     className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
                   >
-                    {selectedSaleId === sale.id ? 'Viendo' : 'Ver detalle'}
+                    {selectedSaleId === sale.id ? "Viendo" : "Ver detalle"}
                   </button>
                 </td>
               </tr>

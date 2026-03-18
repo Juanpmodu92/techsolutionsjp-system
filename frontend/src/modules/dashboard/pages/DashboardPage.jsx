@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react';
-import StatCard from '../../../components/ui/StatCard';
-import { api } from '../../../lib/api';
+import { useEffect, useState } from "react";
+import StatCard from "../../../components/ui/StatCard";
+import { api } from "../../../lib/api";
+import { formatCurrency } from "../../../utils/format";
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchMetrics() {
       try {
-        const response = await api.get('/dashboard/metrics');
+        const response = await api.get("/dashboard/metrics");
         setMetrics(response.data.data);
       } catch (err) {
         setError(
-          err?.response?.data?.message ||
-            'No fue posible cargar las métricas'
+          err?.response?.data?.message || "No fue posible cargar las métricas",
         );
       } finally {
         setLoading(false);
@@ -53,22 +53,25 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Clientes" value={totals.clients ?? 0} />
-        <StatCard title="Productos activos" value={totals.active_products ?? 0} />
-        <StatCard title="Servicios activos" value={totals.active_services ?? 0} />
+        <StatCard
+          title="Productos activos"
+          value={totals.active_products ?? 0}
+        />
+        <StatCard
+          title="Servicios activos"
+          value={totals.active_services ?? 0}
+        />
         <StatCard title="Cotizaciones" value={totals.quotes ?? 0} />
         <StatCard title="Ventas" value={totals.sales ?? 0} />
         <StatCard
           title="Ingresos registrados"
-          value={`$ ${totals.sales_amount ?? '0.00'}`}
+          value={formatCurrency(totals.sales_amount)}
         />
         <StatCard
           title="Proyectos software"
           value={totals.software_projects ?? 0}
         />
-        <StatCard
-          title="Clientes activos"
-          value={totals.active_clients ?? 0}
-        />
+        <StatCard title="Clientes activos" value={totals.active_clients ?? 0} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">

@@ -1,23 +1,16 @@
-import QuoteStatusActions from './QuoteStatusActions';
-
-function getClientName(quote) {
-  if (quote.client_type === 'company') {
-    return quote.company_name;
-  }
-
-  return `${quote.first_name ?? ''} ${quote.last_name ?? ''}`.trim();
-}
+import { formatClientName, formatCurrency } from "../../../utils/format";
+import QuoteStatusActions from "./QuoteStatusActions";
 
 function getStatusBadgeClass(status) {
   const classes = {
-    draft: 'bg-slate-200 text-slate-700',
-    sent: 'bg-blue-100 text-blue-700',
-    approved: 'bg-emerald-100 text-emerald-700',
-    rejected: 'bg-red-100 text-red-700',
-    expired: 'bg-amber-100 text-amber-700'
+    draft: "bg-slate-200 text-slate-700",
+    sent: "bg-blue-100 text-blue-700",
+    approved: "bg-emerald-100 text-emerald-700",
+    rejected: "bg-red-100 text-red-700",
+    expired: "bg-amber-100 text-amber-700",
   };
 
-  return classes[status] || 'bg-slate-200 text-slate-700';
+  return classes[status] || "bg-slate-200 text-slate-700";
 }
 
 export default function QuotesTable({
@@ -25,7 +18,7 @@ export default function QuotesTable({
   selectedQuoteId,
   onSelectQuote,
   onChangeStatus,
-  processingId
+  processingId,
 }) {
   return (
     <div className="overflow-x-auto rounded-2xl bg-white shadow-sm">
@@ -43,24 +36,27 @@ export default function QuotesTable({
         <tbody>
           {quotes.length ? (
             quotes.map((quote) => (
-              <tr key={quote.id} className="border-b border-slate-100 align-top">
+              <tr
+                key={quote.id}
+                className="border-b border-slate-100 align-top"
+              >
                 <td className="px-4 py-3 font-medium text-slate-900">
                   {quote.quote_number}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  {getClientName(quote)}
+                  {formatClientName(quote)}
                 </td>
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusBadgeClass(
-                      quote.status
+                      quote.status,
                     )}`}
                   >
                     {quote.status}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-slate-700">
-                  $ {Number(quote.total).toLocaleString('es-CO')}
+                  {formatCurrency(quote.total)}
                 </td>
                 <td className="px-4 py-3">
                   <QuoteStatusActions
@@ -75,7 +71,7 @@ export default function QuotesTable({
                     onClick={() => onSelectQuote(quote)}
                     className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
                   >
-                    {selectedQuoteId === quote.id ? 'Viendo' : 'Ver detalle'}
+                    {selectedQuoteId === quote.id ? "Viendo" : "Ver detalle"}
                   </button>
                 </td>
               </tr>
