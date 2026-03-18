@@ -1,31 +1,42 @@
-import { useEffect, useMemo, useState } from 'react';
-import { api } from '../../../lib/api';
-import ClientForm from '../components/ClientForm';
-import ClientsTable from '../components/ClientsTable';
+import { useEffect, useMemo, useState } from "react";
+import ConfirmDialog from "../../../components/feedback/ConfirmDialog";
+import { api } from "../../../lib/api";
+import { useToast } from "../../../context/ToastContext";
+import ClientForm from "../components/ClientForm";
+import ClientsTable from "../components/ClientsTable";
 
 export default function ClientsPage() {
   const [clients, setClients] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const [fetchError, setFetchError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [processingClientId, setProcessingClientId] = useState('');
+  const [processingClientId, setProcessingClientId] = useState("");
   const [editingClient, setEditingClient] = useState(null);
+  const [confirmState, setConfirmState] = useState({
+    open: false,
+    client: null,
+    action: null,
+  });
 
-  async function fetchClients(nextSearch = '') {
+  const toast = useToast();
+
+  async function fetchClients(nextSearch = "") {
     try {
-      setFetchError('');
+      setFetchError("");
 
-      const response = await api.get('/clients', {
-        params: nextSearch ? { search: nextSearch } : {}
+      const response = await api.get("/clients", {
+        params: nextSearch ? { search: nextSearch } : {},
       });
 
       setClients(response.data.data);
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible cargar clientes'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible cargar clientes";
+
+      setFetchError(message);
+      toast.error("Error al cargar clientes", message);
     } finally {
       setLoading(false);
     }
@@ -43,14 +54,17 @@ export default function ClientsPage() {
 
   async function handleCreateClient(payload) {
     try {
-      setSubmitError('');
+      setSubmitError("");
       setIsSubmitting(true);
-      await api.post('/clients', payload);
+      await api.post("/clients", payload);
       await fetchClients(search);
+      toast.success("Cliente creado", "El cliente se registró correctamente.");
     } catch (err) {
-      setSubmitError(
-        err?.response?.data?.message || 'No fue posible crear el cliente'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible crear el cliente";
+
+      setSubmitError(message);
+      toast.error("Error al crear cliente", message);
     } finally {
       setIsSubmitting(false);
     }
@@ -60,52 +74,81 @@ export default function ClientsPage() {
     if (!editingClient) return;
 
     try {
-      setSubmitError('');
+      setSubmitError("");
       setIsSubmitting(true);
       await api.put(`/clients/${editingClient.id}`, payload);
       setEditingClient(null);
       await fetchClients(search);
+      toast.success("Cliente actualizado", "Los cambios fueron guardados.");
     } catch (err) {
-      setSubmitError(
-        err?.response?.data?.message || 'No fue posible actualizar el cliente'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible actualizar el cliente";
+
+      setSubmitError(message);
+      toast.error("Error al actualizar cliente", message);
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleDeactivate(client) {
+  function requestDeactivate(client) {
+    setConfirmState({
+      open: true,
+      client,
+      action: "deactivate",
+    });
+  }
+
+  function requestActivate(client) {
+    setConfirmState({
+      open: true,
+      client,
+      action: "activate",
+    });
+  }
+
+  function closeConfirm() {
+    setConfirmState({
+      open: false,
+      client: null,
+      action: null,
+    });
+  }
+
+  async function handleConfirmAction() {
+    const { client, action } = confirmState;
+    if (!client || !action) return;
+
     try {
       setProcessingClientId(client.id);
-      await api.patch(`/clients/${client.id}/deactivate`);
+
+      if (action === "deactivate") {
+        await api.patch(`/clients/${client.id}/deactivate`);
+        toast.success("Cliente desactivado", "El cliente quedó inactivo.");
+      }
+
+      if (action === "activate") {
+        await api.patch(`/clients/${client.id}/activate`);
+        toast.success("Cliente activado", "El cliente volvió a estar activo.");
+      }
+
+      closeConfirm();
       await fetchClients(search);
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible desactivar el cliente'
-      );
+      const message =
+        err?.response?.data?.message ||
+        `No fue posible ${action === "activate" ? "activar" : "desactivar"} el cliente`;
+
+      setFetchError(message);
+      toast.error("Operación no completada", message);
     } finally {
-      setProcessingClientId('');
+      setProcessingClientId("");
     }
   }
 
-
-  async function handleActivate(client) {
-  try {
-    setProcessingClientId(client.id);
-    await api.patch(`/clients/${client.id}/activate`);
-    await fetchClients(search);
-  } catch (err) {
-    setFetchError(
-      err?.response?.data?.message || 'No fue posible activar el cliente'
-    );
-  } finally {
-    setProcessingClientId('');
-  }
-}
-
   const formTitle = useMemo(
-    () => (editingClient ? 'Editar cliente' : 'Nuevo cliente'),
-    [editingClient]
+    () => (editingClient ? "Editar cliente" : "Nuevo cliente"),
+    [editingClient],
   );
 
   return (
@@ -122,8 +165,8 @@ export default function ClientsPage() {
           <h3 className="text-lg font-semibold text-slate-900">{formTitle}</h3>
           <p className="mt-1 text-sm text-slate-500">
             {editingClient
-              ? 'Actualiza la información del cliente seleccionado.'
-              : 'Registra un nuevo cliente en el sistema.'}
+              ? "Actualiza la información del cliente seleccionado."
+              : "Registra un nuevo cliente en el sistema."}
           </p>
 
           {submitError ? (
@@ -134,11 +177,13 @@ export default function ClientsPage() {
 
           <div className="mt-5">
             <ClientForm
-              mode={editingClient ? 'edit' : 'create'}
+              mode={editingClient ? "edit" : "create"}
               initialValues={editingClient}
               isSubmitting={isSubmitting}
               onSubmit={editingClient ? handleUpdateClient : handleCreateClient}
-              onCancel={editingClient ? () => setEditingClient(null) : undefined}
+              onCancel={
+                editingClient ? () => setEditingClient(null) : undefined
+              }
             />
           </div>
         </section>
@@ -179,13 +224,35 @@ export default function ClientsPage() {
             <ClientsTable
               clients={clients}
               onEdit={setEditingClient}
-              onDeactivate={handleDeactivate}
-              onActivate={handleActivate}
+              onDeactivate={requestDeactivate}
+              onActivate={requestActivate}
               isProcessingId={processingClientId}
             />
           )}
         </section>
       </div>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title={
+          confirmState.action === "activate"
+            ? "Activar cliente"
+            : "Desactivar cliente"
+        }
+        message={
+          confirmState.action === "activate"
+            ? "¿Deseas activar este cliente?"
+            : "¿Deseas desactivar este cliente?"
+        }
+        confirmText={
+          confirmState.action === "activate" ? "Activar" : "Desactivar"
+        }
+        confirmVariant={
+          confirmState.action === "activate" ? "primary" : "danger"
+        }
+        onConfirm={handleConfirmAction}
+        onCancel={closeConfirm}
+      />
     </section>
   );
 }
