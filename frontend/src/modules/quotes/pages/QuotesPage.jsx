@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
-import { api } from '../../../lib/api';
-import QuoteForm from '../components/QuoteForm';
-import QuotesTable from '../components/QuotesTable';
+import { useEffect, useState } from "react";
+import { useToast } from "../../../context/ToastContext";
+import { api } from "../../../lib/api";
+import { openPdfFromApi } from "../../../lib/file";
+import QuoteForm from "../components/QuoteForm";
+import QuotesTable from "../components/QuotesTable";
 
 export default function QuotesPage() {
   const [quotes, setQuotes] = useState([]);
@@ -10,22 +12,26 @@ export default function QuotesPage() {
   const [services, setServices] = useState([]);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const [fetchError, setFetchError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [processingQuoteId, setProcessingQuoteId] = useState('');
+  const [processingQuoteId, setProcessingQuoteId] = useState("");
+  const [processingPdfId, setProcessingPdfId] = useState("");
+
+  const toast = useToast();
 
   async function loadQuotes() {
-    const response = await api.get('/quotes');
+    const response = await api.get("/quotes");
     setQuotes(response.data.data);
   }
 
   async function loadDependencies() {
-    const [clientsResponse, productsResponse, servicesResponse] = await Promise.all([
-      api.get('/clients'),
-      api.get('/products'),
-      api.get('/services')
-    ]);
+    const [clientsResponse, productsResponse, servicesResponse] =
+      await Promise.all([
+        api.get("/clients"),
+        api.get("/products"),
+        api.get("/services"),
+      ]);
 
     setClients(clientsResponse.data.data);
     setProducts(productsResponse.data.data);
@@ -34,12 +40,14 @@ export default function QuotesPage() {
 
   async function loadData() {
     try {
-      setFetchError('');
+      setFetchError("");
       await Promise.all([loadQuotes(), loadDependencies()]);
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible cargar cotizaciones'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible cargar cotizaciones";
+
+      setFetchError(message);
+      toast.error("Error al cargar cotizaciones", message);
     } finally {
       setLoading(false);
     }
@@ -51,14 +59,17 @@ export default function QuotesPage() {
 
   async function handleCreateQuote(payload) {
     try {
-      setSubmitError('');
+      setSubmitError("");
       setIsSubmitting(true);
-      await api.post('/quotes', payload);
+      await api.post("/quotes", payload);
       await loadQuotes();
+      toast.success("Cotización creada", "La cotización fue registrada.");
     } catch (err) {
-      setSubmitError(
-        err?.response?.data?.message || 'No fue posible crear la cotización'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible crear la cotización";
+
+      setSubmitError(message);
+      toast.error("Error al crear cotización", message);
     } finally {
       setIsSubmitting(false);
     }
@@ -69,9 +80,11 @@ export default function QuotesPage() {
       const response = await api.get(`/quotes/${quote.id}`);
       setSelectedQuote(response.data.data);
     } catch (err) {
-      setFetchError(
-        err?.response?.data?.message || 'No fue posible cargar el detalle'
-      );
+      const message =
+        err?.response?.data?.message || "No fue posible cargar el detalle";
+
+      setFetchError(message);
+      toast.error("Error al cargar detalle", message);
     }
   }
 
@@ -80,18 +93,36 @@ export default function QuotesPage() {
       setProcessingQuoteId(quote.id);
       await api.patch(`/quotes/${quote.id}/status`, { status });
       await loadQuotes();
+      toast.success("Estado actualizado", "La cotización cambió de estado.");
 
       if (selectedQuote?.id === quote.id) {
         const refreshed = await api.get(`/quotes/${quote.id}`);
         setSelectedQuote(refreshed.data.data);
       }
     } catch (err) {
-      setFetchError(
+      const message =
         err?.response?.data?.message ||
-          'No fue posible actualizar el estado de la cotización'
-      );
+        "No fue posible actualizar el estado de la cotización";
+
+      setFetchError(message);
+      toast.error("Error al actualizar estado", message);
     } finally {
-      setProcessingQuoteId('');
+      setProcessingQuoteId("");
+    }
+  }
+
+  async function handleViewPdf(quote) {
+    try {
+      setProcessingPdfId(quote.id);
+      await openPdfFromApi(`/quotes/${quote.id}/pdf`);
+      toast.info("PDF abierto", `Se abrió el PDF de ${quote.quote_number}.`);
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || "No fue posible abrir el PDF";
+
+      toast.error("Error al abrir PDF", message);
+    } finally {
+      setProcessingPdfId("");
     }
   }
 
@@ -144,7 +175,9 @@ export default function QuotesPage() {
               selectedQuoteId={selectedQuote?.id}
               onSelectQuote={handleSelectQuote}
               onChangeStatus={handleChangeStatus}
+              onViewPdf={handleViewPdf}
               processingId={processingQuoteId}
+              processingPdfId={processingPdfId}
             />
           )}
 
@@ -157,12 +190,14 @@ export default function QuotesPage() {
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div>
                   <p className="text-sm text-slate-500">Estado</p>
-                  <p className="font-medium text-slate-900">{selectedQuote.status}</p>
+                  <p className="font-medium text-slate-900">
+                    {selectedQuote.status}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">Total</p>
                   <p className="font-medium text-slate-900">
-                    $ {Number(selectedQuote.total).toLocaleString('es-CO')}
+                    $ {Number(selectedQuote.total).toLocaleString("es-CO")}
                   </p>
                 </div>
               </div>
@@ -181,14 +216,20 @@ export default function QuotesPage() {
                   <tbody>
                     {selectedQuote.items.map((item) => (
                       <tr key={item.id} className="border-b border-slate-100">
-                        <td className="px-3 py-3 text-slate-700">{item.item_type}</td>
-                        <td className="px-3 py-3 text-slate-900">{item.description}</td>
-                        <td className="px-3 py-3 text-slate-700">{item.quantity}</td>
                         <td className="px-3 py-3 text-slate-700">
-                          $ {Number(item.unit_price).toLocaleString('es-CO')}
+                          {item.item_type}
+                        </td>
+                        <td className="px-3 py-3 text-slate-900">
+                          {item.description}
                         </td>
                         <td className="px-3 py-3 text-slate-700">
-                          $ {Number(item.line_total).toLocaleString('es-CO')}
+                          {item.quantity}
+                        </td>
+                        <td className="px-3 py-3 text-slate-700">
+                          $ {Number(item.unit_price).toLocaleString("es-CO")}
+                        </td>
+                        <td className="px-3 py-3 text-slate-700">
+                          $ {Number(item.line_total).toLocaleString("es-CO")}
                         </td>
                       </tr>
                     ))}

@@ -18,7 +18,9 @@ export default function QuotesTable({
   selectedQuoteId,
   onSelectQuote,
   onChangeStatus,
+  onViewPdf,
   processingId,
+  processingPdfId,
 }) {
   return (
     <div className="overflow-x-auto rounded-2xl bg-white shadow-sm">
@@ -30,6 +32,7 @@ export default function QuotesTable({
             <th className="px-4 py-3">Estado</th>
             <th className="px-4 py-3">Total</th>
             <th className="px-4 py-3">Acciones</th>
+            <th className="px-4 py-3">PDF</th>
             <th className="px-4 py-3">Detalle</th>
           </tr>
         </thead>
@@ -68,6 +71,16 @@ export default function QuotesTable({
                 <td className="px-4 py-3">
                   <button
                     type="button"
+                    onClick={() => onViewPdf(quote)}
+                    disabled={processingPdfId === quote.id}
+                    className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+                  >
+                    {processingPdfId === quote.id ? "Abriendo..." : "Ver PDF"}
+                  </button>
+                </td>
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
                     onClick={() => onSelectQuote(quote)}
                     className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
                   >
@@ -78,7 +91,7 @@ export default function QuotesTable({
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="px-4 py-6 text-center text-slate-500">
+              <td colSpan="7" className="px-4 py-6 text-center text-slate-500">
                 No hay cotizaciones para mostrar.
               </td>
             </tr>
