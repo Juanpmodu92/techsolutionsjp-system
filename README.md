@@ -308,3 +308,7 @@ Próximas mejoras
 * mejoras de experiencia de usuario
 * despliegue productivo
 * documentación técnica ampliada
+
+Autor
+
+Desarrollado por Juan Pablo Moreno para Tech Solutions JP.
